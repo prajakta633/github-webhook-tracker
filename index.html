@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GitHub Webhook Activity</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f7f7f7;
+    }
+    h1 {
+      color: #333;
+    }
+    .event {
+      background: white;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>GitHub Webhook Activity Feed</h1>
+  <div id="events"></div>
+
+  <script>
+    async function fetchEvents() {
+      try {
+        const response = await fetch('http://localhost:5000/events');
+        const data = await response.json();
+
+        const container = document.getElementById("events");
+        container.innerHTML = "";
+
+        data.reverse().forEach(event => {
+          let message = "";
+
+          if (event.type === "PUSH") {
+            message = `${event.author} pushed to ${event.to_branch} on ${event.timestamp}`;
+          } else if (event.type === "PULL_REQUEST") {
+            message = `${event.author} submitted a pull request from ${event.from_branch} to ${event.to_branch} on ${event.timestamp}`;
+          } else if (event.type === "MERGE") {
+            message = `${event.author} merged branch ${event.from_branch} to ${event.to_branch} on ${event.timestamp}`;
+          }
+
+          const div = document.createElement("div");
+          div.className = "event";
+          div.innerText = message;
+          container.appendChild(div);
+        });
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+      }
+    }
+
+    fetchEvents();                  // Initial load
+    setInterval(fetchEvents, 15000); // Refresh every 15 seconds
+  </script>
+</body>
+</html>
